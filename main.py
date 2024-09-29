@@ -6,12 +6,14 @@ import fastapi.logger as logger
 import pydantic
 from dto import OrderDto, OrderStatusDto, ProductDto
 
+from config import Engine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting the app...")
     yield
     print("Closing the app")
+
 
 app = FastAPI(debug=True, title="This is a title",
               summary="This is a summary", lifespan=lifespan)
@@ -67,22 +69,6 @@ def update_order_status(id: int, orderStatus: OrderStatusDto):
     ...
 
 # @app.get
-
-
-# '''
-# Реализация REST API:
-# Эндпоинты для товаров:
-# Создание товара (POST /products).
-# Получение списка товаров (GET /products).
-# Получение информации о товаре по id (GET /products/{id}).
-# Обновление информации о товаре (PUT /products/{id}).
-# Удаление товара (DELETE /products/{id}).
-# Эндпоинты для заказов:
-# Создание заказа (POST /orders).
-# Получение списка заказов (GET /orders).
-# Получение информации о заказе по id (GET /orders/{id}).
-# Обновление статуса заказа (PATCH /orders/{id}/status).
-# '''
 
 
 if __name__ == "__main__":
