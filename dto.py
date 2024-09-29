@@ -1,8 +1,10 @@
-class ProductDto:
+from pydantic import BaseModel
+
+class ProductDto(BaseModel):
     ...
 
-class OrderDto:
+class OrderDto(BaseModel):
     ...
 
-class OrderStatusDto:
+class OrderStatusDto(BaseModel):
     ...
