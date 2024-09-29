@@ -13,9 +13,10 @@ if DBAPI == 'sqlite':
     DB += '.db'
     # engine is great, extra abstraction layer - allows to interchange between sqlite3 and psql
 
+print(f"{DBAPI}:///{DB}")
 
 
-Engine = sqlalchemy.create_engine(f"{DBAPI}:///{DB}")
+Engine = sqlalchemy.create_engine(f"{DBAPI}:///{DB}", echo=True)
 Session = sessionmaker(Engine)
-# session collectos transactions and commits them at once
+# session collects transactions and commits them at once
 # also session can do queries (unlike connection)
