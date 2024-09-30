@@ -57,9 +57,12 @@ def create_product(product: ProductDto, res: Response):
 
 
 @app.get("/products")
-def get_products():
+def get_products() -> list[ProductDto]:
     with Session() as session:
-        return session.query(Product).all()
+        stmt = select(Product)
+        out = session.execute(stmt).fetchall()
+        return list(*out)
+        # return session.query(Product).all()
 
 
 @app.get("/products/{id}")
@@ -98,9 +101,9 @@ def delete_product(id: str) -> None:
 
 # Orders
 
-@app.post("/orders")
-def create_order(order: OrderDto):
-    # 201 or 204
+@app.post("/orders", status_code=HTTPStatus.CREATED)
+def create_order(order: OrderDto) -> None:
+    # 201 or 409
     try:
         with Session() as s:
             s.add(Order(**order.model_dump()))
@@ -110,23 +113,34 @@ def create_order(order: OrderDto):
 
 
 @app.get("/orders")
-def get_orders():
-    ...
+def get_orders() -> list[OrderDto]:
+    with Session() as session:
+        stmt = select(Order)
+        out = session.execute(stmt).fetchall()
+        return list(*out)
+    
 
 
 @app.get("/orders/{id}")
-def get_order(id: int):
-    ...
+def get_order(id: str) -> OrderDto:
+    with Session() as session:
+        stmt = select(Order).where(Order.id == id)
+        if (out := session.execute(stmt).first()):
+            return out[0]
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Order not found')
 
 
-@app.patch("/orders{id}/status")
-def update_order_status(id: int, orderStatus: UpdateOrderStatus, req: Request, res: Response):
+@app.patch("/orders/{id}/status", status_code=HTTPStatus.NO_CONTENT)
+def update_order_status(id: str, orderStatus: UpdateOrderStatus):
     # 200 or 204
     # If no product - 204
-    json_dict = json.loads(req.body)
-    product = OrderDto(**json_dict)
-    ...
-
+    with Session() as session:
+        stmt = update(Order)\
+            .where(Order.id == id)\
+            .values(**orderStatus.model_dump())
+        if not session.execute(stmt).rowcount:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Order not found')
+        session.commit()
 # @app.get
 
 

@@ -35,7 +35,7 @@ class Product(BaseModel):
 class Order(BaseModel):
     __tablename__ = "Order"
 
-    id = Column("id", INTEGER, primary_key=True, autoincrement=True) # better for testing
+    id = Column("id", VARCHAR(UUID_LENGTH), primary_key=True, default=str(uuid4())[:UUID_LENGTH]) # better for testing
     # id: Mapped[UUID] = mapped_column(pg_UUID(), init=False, primary_key=True, default=uuid4(), repr=False)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now())
     status: Mapped[OrderStatus] = mapped_column(
