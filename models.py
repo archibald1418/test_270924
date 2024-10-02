@@ -1,8 +1,8 @@
-from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass, Mapped, mapped_column, deferred
-from sqlalchemy.ext.hybrid import Comparator, hybrid_property
-from sqlalchemy import ColumnElement
+from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass, Mapped, mapped_column, deferred, relationship
 from sqlalchemy.schema import Column
+from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID as pg_UUID, INTEGER, TEXT, VARCHAR
+from sqlalchemy.sql import func, text
 from sqlalchemy.types import DateTime
 import sqlalchemy as sa
 from datetime import datetime
@@ -14,8 +14,10 @@ from _types import OrderStatus
 
 
 UUID_LENGTH = 5
+def gen_uuid_prefix():
+    return str(uuid4())[:UUID_LENGTH]
 
-class BaseModel(MappedAsDataclass, DeclarativeBase, kw_only=True):
+class BaseModel(DeclarativeBase):
     ...
 
 
@@ -23,32 +25,35 @@ class Product(BaseModel):
     __tablename__ = "Product"
 
 
-    # id = Column(INTEGER, primary_key=True)
-    id = Column('id', VARCHAR(UUID_LENGTH), primary_key=True, default=str(uuid4())[:UUID_LENGTH])
+    id = Column('id', VARCHAR(UUID_LENGTH), primary_key=True, default=gen_uuid_prefix)
     name: Mapped[str] = mapped_column(nullable=False)
     price: Mapped[float] = mapped_column(nullable=False)
-    description: Mapped[str] = mapped_column(nullable=True, default_factory=str)
+    description: Mapped[str] = mapped_column(nullable=True, default='')
     amount_in_stock: Mapped[int] = mapped_column(default=0)
 
+    orders: Mapped[list['Order']] = relationship(cascade='all,delete,expunge', back_populates='product', secondary='OrderItem')
 
+
+first_five = text("substr(cast(gen_random_uuid() as varchar(36)), 0, 5)")
 
 class Order(BaseModel):
     __tablename__ = "Order"
 
-    id = Column("id", VARCHAR(UUID_LENGTH), primary_key=True, default=str(uuid4())[:UUID_LENGTH]) # better for testing
-    # id: Mapped[UUID] = mapped_column(pg_UUID(), init=False, primary_key=True, default=uuid4(), repr=False)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now())
+    id: Mapped[int] = mapped_column(VARCHAR(UUID_LENGTH), primary_key=True, default=gen_uuid_prefix)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     status: Mapped[OrderStatus] = mapped_column(
         default=OrderStatus.IN_PROGRESS)
+    
+    # order: Mapped['Order'] = relationship(cascade='all,delete,expunge', back_populates='order', secondary='OrderItem')
+    # orderItem: Mapped['OrderItem'] = relationship(cascade='all,delete,expunge', back_populates='order')
+    product: Mapped['Product'] = relationship(back_populates='orders', secondary='OrderItem')
 
 
 class OrderItem(BaseModel):
     __tablename__ = "OrderItem"
     
-    id: Mapped[int] = mapped_column(
-        init=False, primary_key=True, autoincrement=True)
-    order_id: Mapped[int] = mapped_column(
-        init=False)  # TODO: reference
-    product_id: Mapped[int] = mapped_column(
-        init=False)  # TODO: reference
+    id = Column("id", VARCHAR(UUID_LENGTH), primary_key=True, default=gen_uuid_prefix) 
+    # id: Mapped[UUID] = mapped_column(pg_UUID(), init=False, primary_key=True, default=uuid4(), repr=False)
+    order_id: Mapped[str] = mapped_column(ForeignKey("Order.id"))
+    product_id: Mapped[str] = mapped_column(ForeignKey("Product.id"))
     amount: Mapped[int] = mapped_column(nullable=False, default=1)
