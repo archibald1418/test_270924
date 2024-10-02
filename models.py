@@ -8,13 +8,11 @@ import sqlalchemy as sa
 from datetime import datetime
 
 from uuid import uuid4, UUID
-# import shortuuid
-
 from _types import OrderStatus
 
 
 UUID_LENGTH = 5
-def gen_uuid_prefix():
+def _gen_uuid_prefix():
     return str(uuid4())[:UUID_LENGTH]
 
 class BaseModel(DeclarativeBase):
@@ -25,7 +23,7 @@ class Product(BaseModel):
     __tablename__ = "Product"
 
 
-    id = Column('id', VARCHAR(UUID_LENGTH), primary_key=True, default=gen_uuid_prefix)
+    id = Column('id', VARCHAR(UUID_LENGTH), primary_key=True, default=_gen_uuid_prefix)
     name: Mapped[str] = mapped_column(nullable=False)
     price: Mapped[float] = mapped_column(nullable=False)
     description: Mapped[str] = mapped_column(nullable=True, default='')
@@ -34,12 +32,11 @@ class Product(BaseModel):
     orders: Mapped[list['Order']] = relationship(cascade='all,delete,expunge', back_populates='product', secondary='OrderItem')
 
 
-first_five = text("substr(cast(gen_random_uuid() as varchar(36)), 0, 5)")
 
 class Order(BaseModel):
     __tablename__ = "Order"
 
-    id: Mapped[int] = mapped_column(VARCHAR(UUID_LENGTH), primary_key=True, default=gen_uuid_prefix)
+    id: Mapped[int] = mapped_column(VARCHAR(UUID_LENGTH), primary_key=True, default=_gen_uuid_prefix)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     status: Mapped[OrderStatus] = mapped_column(
         default=OrderStatus.IN_PROGRESS)
@@ -52,8 +49,8 @@ class Order(BaseModel):
 class OrderItem(BaseModel):
     __tablename__ = "OrderItem"
     
-    id = Column("id", VARCHAR(UUID_LENGTH), primary_key=True, default=gen_uuid_prefix) 
+    id = Column("id", VARCHAR(UUID_LENGTH), primary_key=True, default=_gen_uuid_prefix) 
     # id: Mapped[UUID] = mapped_column(pg_UUID(), init=False, primary_key=True, default=uuid4(), repr=False)
-    order_id: Mapped[str] = mapped_column(ForeignKey("Order.id"))
-    product_id: Mapped[str] = mapped_column(ForeignKey("Product.id"))
-    amount: Mapped[int] = mapped_column(nullable=False, default=1)
+    order_id: Mapped[str] = mapped_column(ForeignKey("Order.id", ondelete='CASCADE', onupdate='CASCADE'))
+    product_id: Mapped[str] = mapped_column(ForeignKey("Product.id", ondelete='CASCADE', onupdate='CASCADE'))
+    amount: Mapped[int] = mapped_column(nullable=False)

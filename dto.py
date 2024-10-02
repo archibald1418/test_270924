@@ -3,6 +3,8 @@ from typing import Annotated, Optional
 from _types import OrderStatus
 import datetime
 
+from models import UUID_LENGTH
+
 
 class ProductDto(BaseModel):
     name: str
@@ -19,9 +21,9 @@ class OrderDto(BaseModel):
     status: OrderStatus
 
 
-class CreateOrder(BaseModel):
+class CreateOrderDto(BaseModel):
+    product_id: Annotated[str, Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)]
     amount: Annotated[int, Field(gt=0)]
-    product_id: Annotated[int, Field(ge=0)]
 
 
 # this is client-side dto TODO: rename to updateStatusDto
