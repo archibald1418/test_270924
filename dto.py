@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_validator, model_validator, Field, ValidationError
-from typing import Annotated, Optional 
+from typing import Annotated, Optional
 from _types import OrderStatus
 import datetime
 
@@ -16,13 +16,15 @@ class ProductDto(BaseModel):
 
 # class UpdateProductDto(ProductDto): ...
 
+
 class OrderDto(BaseModel):
     created_at: datetime.datetime
     status: OrderStatus
 
 
 class CreateOrderDto(BaseModel):
-    product_id: Annotated[str, Field(min_length=UUID_LENGTH, max_length=UUID_LENGTH)]
+    product_id: Annotated[str, Field(
+        min_length=UUID_LENGTH, max_length=UUID_LENGTH)]
     amount: Annotated[int, Field(gt=0)]
 
 

@@ -20,7 +20,7 @@ elif 'pg' in DBAPI:
     PGPASSWORD = os.environ["PGPASSWORD"]
     PGHOST = os.environ["PGHOST"]
     PGPORT = os.environ["PGPORT"]
-    
+
     DBURL = f'postgresql+{DBAPI}://{PGUSER}@{PGHOST}:{PGPORT}/{DB}'
 
     # engine is great, extra abstraction layer - allows to interchange between sqlite3 and psql

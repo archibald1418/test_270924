@@ -6,7 +6,7 @@ from typing import Annotated, Dict, Any, cast
 from fastapi import FastAPI, Query, Request, Response, Path
 from fastapi.encoders import jsonable_encoder
 from fastapi import HTTPException
-import json 
+import json
 from fastapi.responses import JSONResponse
 import fastapi.logger as logger
 import pydantic
@@ -54,8 +54,8 @@ def create_product(product: ProductDto, res: Response):
             s.add(Product(**product.model_dump()))
             s.commit()
     except IntegrityError:
-        raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="The product is already present")
-        
+        raise HTTPException(status_code=HTTPStatus.CONFLICT,
+                            detail="The product is already present")
 
 
 @app.get("/products")
@@ -74,7 +74,8 @@ def get_product(id: str) -> ProductDto | None:
         stmt = select(Product).where(Product.id == id)
         if (out := session.execute(stmt).first()):
             return out[0]
-    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Product not found')
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
+                        detail='Product not found')
 
 
 @app.put("/products/{id}", response_model=None, status_code=HTTPStatus.NO_CONTENT)
@@ -86,7 +87,8 @@ def update_product(id: str, productUpdate: ProductDto):
             .where(Product.id == id)\
             .values(**productUpdate.model_dump())
         if not session.execute(stmt).rowcount:
-            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Product not found')
+            raise HTTPException(
+                status_code=HTTPStatus.NOT_FOUND, detail='Product not found')
         session.commit()
 
 
@@ -97,7 +99,8 @@ def delete_product(id: str) -> None:
     with Session() as session:
         stmt = delete(Product).where(Product.id == id)
         if not session.execute(stmt).rowcount:
-            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Product not found')
+            raise HTTPException(
+                status_code=HTTPStatus.NOT_FOUND, detail='Product not found')
         session.commit()
 
 
@@ -109,17 +112,20 @@ def create_order(newOrder: CreateOrderDto) -> None:
     with Session() as s:
         product: Product | None = s.get(Product, newOrder.product_id)
         if not product:
-            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Product not found')
+            raise HTTPException(
+                status_code=HTTPStatus.NOT_FOUND, detail='Product not found')
         if product.amount_in_stock < newOrder.amount:
-            raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail='Not enough product in stock')
-        
+            raise HTTPException(status_code=HTTPStatus.BAD_REQUEST,
+                                detail='Not enough product in stock')
+
         product.amount_in_stock -= newOrder.amount
 
         o = Order()
         s.add(o)
-        s.flush() # send without commiting, updating the current context - making the id available straight away
+        s.flush()  # send without commiting, updating the current context - making the id available straight away
 
-        newOrderItem = OrderItem(product_id=product.id, order_id=o.id, amount=newOrder.amount)
+        newOrderItem = OrderItem(
+            product_id=product.id, order_id=o.id, amount=newOrder.amount)
         s.add(newOrderItem)
         s.commit()
 
@@ -131,7 +137,6 @@ def get_orders() -> list[OrderDto]:
         out = session.execute(stmt).fetchall()
         pprint(out)
         return list(itertools.chain(*out))
-    
 
 
 @app.get("/orders/{id}")
@@ -140,7 +145,8 @@ def get_order(id: str) -> OrderDto:
         stmt = select(Order).where(Order.id == id)
         if (out := session.execute(stmt).first()):
             return out[0]
-    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Order not found')
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
+                        detail='Order not found')
 
 
 @app.patch("/orders/{id}/status", status_code=HTTPStatus.NO_CONTENT)
@@ -152,7 +158,8 @@ def update_order_status(id: str, orderStatus: UpdateOrderStatus):
             .where(Order.id == id)\
             .values(**orderStatus.model_dump())
         if not session.execute(stmt).rowcount:
-            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Order not found')
+            raise HTTPException(
+                status_code=HTTPStatus.NOT_FOUND, detail='Order not found')
         session.commit()
 # @app.get
 
