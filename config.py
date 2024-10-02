@@ -25,10 +25,9 @@ elif 'pg' in DBAPI:
 
     # engine is great, extra abstraction layer - allows to interchange between sqlite3 and psql
 
-print(DBURL)
 # pprint(dict(os.environ.items()))
 
-
+assert DBURL
 Engine = sqlalchemy.create_engine(DBURL, echo=True)
 Session = sessionmaker(Engine)
 # session collects transactions and commits them at once
