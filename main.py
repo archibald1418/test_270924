@@ -24,11 +24,12 @@ import itertools
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    BaseModel.metadata.create_all(Engine)
+    # BaseModel.metadata.create_all(Engine)
 
     print("Starting the app...")
     yield
     print("Closing the app")
+    # BaseModel.metadata.drop_all(Engine)
 
 
 app = FastAPI(debug=True, title="This is a title",
@@ -162,4 +163,3 @@ if __name__ == "__main__":
     # except Exception as e:
     #     print(e)
     #     print("Leaving")
-    # BaseModel.metadata.drop_all(Engine)
