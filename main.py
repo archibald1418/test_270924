@@ -25,6 +25,8 @@ import itertools
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # BaseModel.metadata.create_all(Engine)
+    # NOTE: this makes the migrations useless
+    # for the future: use two databases and run migrations off the prod one
 
     print("Starting the app...")
     yield
