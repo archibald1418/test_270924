@@ -12,14 +12,14 @@ import fastapi.logger as logger
 import pydantic
 from sqlalchemy.orm import defer
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, text, update, delete
 from sqlalchemy.dialects.postgresql import insert
-from dto import OrderDto, ProductDto, UpdateOrderStatus
+from dto import CreateOrderDto, OrderDto, ProductDto, UpdateOrderStatus
 
 from config import Engine, Session
-from models import BaseModel, Order, Product
+from models import BaseModel, Order, Product, OrderItem
 
-from pydantic import UUID4
+import itertools
 
 
 @asynccontextmanager
@@ -28,7 +28,6 @@ async def lifespan(app: FastAPI):
 
     print("Starting the app...")
     yield
-    # BaseModel.metadata.drop_all(Engine)
     print("Closing the app")
 
 
@@ -102,14 +101,24 @@ def delete_product(id: str) -> None:
 # Orders
 
 @app.post("/orders", status_code=HTTPStatus.CREATED)
-def create_order(order: OrderDto) -> None:
+def create_order(newOrder: CreateOrderDto) -> None:
     # 201 or 409
-    try:
-        with Session() as s:
-            s.add(Order(**order.model_dump()))
-            s.commit()
-    except IntegrityError:
-        raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="The order is already present")
+    with Session() as s:
+        product: Product | None = s.get(Product, newOrder.product_id)
+        if not product:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Product not found')
+        if product.amount_in_stock < newOrder.amount:
+            raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail='Not enough product in stock')
+        
+        product.amount_in_stock -= newOrder.amount
+
+        o = Order()
+        s.add(o)
+        s.flush() # send without commiting, updating the current context - making the id available straight away
+
+        newOrderItem = OrderItem(product_id=product.id, order_id=o.id, amount=newOrder.amount)
+        s.add(newOrderItem)
+        s.commit()
 
 
 @app.get("/orders")
@@ -117,7 +126,8 @@ def get_orders() -> list[OrderDto]:
     with Session() as session:
         stmt = select(Order)
         out = session.execute(stmt).fetchall()
-        return list(*out)
+        pprint(out)
+        return list(itertools.chain(*out))
     
 
 
@@ -145,9 +155,11 @@ def update_order_status(id: str, orderStatus: UpdateOrderStatus):
 
 
 if __name__ == "__main__":
+    ...
     '''For testing purposes'''
-    try:
-        uvicorn.run("main:app", workers=1, reload=True)
-    except Exception as e:
-        print(e)
-        print("Leaving")
+    # try:
+    #     uvicorn.run("main:app", workers=1, reload=True)
+    # except Exception as e:
+    #     print(e)
+    #     print("Leaving")
+    # BaseModel.metadata.drop_all(Engine)
