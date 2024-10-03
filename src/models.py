@@ -1,15 +1,12 @@
-from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass, Mapped, mapped_column, deferred, relationship
-from sqlalchemy.schema import Column
-from sqlalchemy import ForeignKey
-from sqlalchemy.dialects.postgresql import UUID as pg_UUID, INTEGER, TEXT, VARCHAR
-from sqlalchemy.sql import func, text
-from sqlalchemy.types import DateTime
-import sqlalchemy as sa
 from datetime import datetime
+from uuid import uuid4
 
-from uuid import uuid4, UUID
+from sqlalchemy import ForeignKey
+from sqlalchemy.dialects.postgresql import VARCHAR
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.schema import Column
+
 from _types import OrderStatus
-
 
 UUID_LENGTH = 5
 

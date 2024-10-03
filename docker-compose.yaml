@@ -15,8 +15,6 @@ services:
       - "8000:8000"
     networks:
       - testnet
-        #volumes:
-        #- ./scripts:/app/scripts 
     depends_on:
       - postgres
     restart: unless-stopped

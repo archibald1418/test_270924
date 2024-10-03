@@ -1,37 +1,29 @@
+import itertools
+import json
 from contextlib import asynccontextmanager
-import uvicorn
 from http import HTTPStatus
 from pprint import pprint
-from typing import Annotated, Dict, Any, cast
-from fastapi import FastAPI, Query, Request, Response, Path
-from fastapi.encoders import jsonable_encoder
-from fastapi import HTTPException
-import json
-from fastapi.responses import JSONResponse
+from typing import Annotated, Any, Dict, cast
+
 import fastapi.logger as logger
-import pydantic
-from sqlalchemy.orm import defer
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, text, update, delete
+from fastapi import FastAPI, HTTPException, Path, Query, Request, Response
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+from sqlalchemy import delete, select, text, update
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import defer
+
+from config import Session
 from dto import CreateOrderDto, OrderDto, ProductDto, UpdateOrderStatus
-
-from config import Engine, Session
-from models import BaseModel, Order, Product, OrderItem
-
-import itertools
+from models import Order, OrderItem, Product
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # BaseModel.metadata.create_all(Engine)
-    # NOTE: this makes the migrations useless
-    # for the future: use two databases and run migrations off the prod one
-
     print("Starting the app...")
     yield
     print("Closing the app")
-    # BaseModel.metadata.drop_all(Engine)
 
 
 app = FastAPI(debug=True, title="This is a title",
@@ -64,7 +56,6 @@ def get_products() -> list[ProductDto]:
         stmt = select(Product)
         out = session.execute(stmt).fetchall()
         return list(*out)
-        # return session.query(Product).all()
 
 
 @app.get("/products/{id}")
@@ -80,9 +71,7 @@ def get_product(id: str) -> ProductDto | None:
 
 @app.put("/products/{id}", response_model=None, status_code=HTTPStatus.NO_CONTENT)
 def update_product(id: str, productUpdate: ProductDto):
-    # 200 or 201 or 204
     with Session() as session:
-        # stmt = select(Product).where(Product.id == id)
         stmt = update(Product)\
             .where(Product.id == id)\
             .values(**productUpdate.model_dump())
@@ -94,8 +83,6 @@ def update_product(id: str, productUpdate: ProductDto):
 
 @app.delete("/products/{id}", status_code=HTTPStatus.NO_CONTENT)
 def delete_product(id: str) -> None:
-    # 200 or 204
-    # raise Exception("LOL")
     with Session() as session:
         stmt = delete(Product).where(Product.id == id)
         if not session.execute(stmt).rowcount:
@@ -151,8 +138,6 @@ def get_order(id: str) -> OrderDto:
 
 @app.patch("/orders/{id}/status", status_code=HTTPStatus.NO_CONTENT)
 def update_order_status(id: str, orderStatus: UpdateOrderStatus):
-    # 200 or 204
-    # If no product - 204
     with Session() as session:
         stmt = update(Order)\
             .where(Order.id == id)\
@@ -161,7 +146,6 @@ def update_order_status(id: str, orderStatus: UpdateOrderStatus):
             raise HTTPException(
                 status_code=HTTPStatus.NOT_FOUND, detail='Order not found')
         session.commit()
-# @app.get
 
 
 if __name__ == "__main__":

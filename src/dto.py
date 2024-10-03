@@ -1,8 +1,10 @@
-from pydantic import BaseModel, field_validator, model_validator, Field, ValidationError
-from typing import Annotated, Optional
-from _types import OrderStatus
 import datetime
+from typing import Annotated, Optional
 
+from pydantic import (BaseModel, Field, ValidationError, field_validator,
+                      model_validator)
+
+from _types import OrderStatus
 from models import UUID_LENGTH
 
 
@@ -13,8 +15,6 @@ class ProductDto(BaseModel):
     amount_in_stock: Annotated[int, Field(ge=0, default=0)]
 
     # (no need for validations on db side tho)
-
-# class UpdateProductDto(ProductDto): ...
 
 
 class OrderDto(BaseModel):
@@ -28,6 +28,5 @@ class CreateOrderDto(BaseModel):
     amount: Annotated[int, Field(gt=0)]
 
 
-# this is client-side dto TODO: rename to updateStatusDto
 class UpdateOrderStatus(BaseModel):
     status: OrderStatus

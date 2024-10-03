@@ -1,8 +1,9 @@
-from dotenv import load_dotenv
-import sqlalchemy
-from sqlalchemy.orm import sessionmaker
 import os
 from pprint import pprint
+
+import sqlalchemy
+from dotenv import load_dotenv
+from sqlalchemy.orm import sessionmaker
 
 #if not load_dotenv(".env", override=True):
 #    raise Exception("Envs are not loaded, check them please")
@@ -23,12 +24,7 @@ elif 'pg' in DBAPI:
 
     DBURL=f'postgresql+{DBAPI}://{PGUSER}:{PGPASS}@{PGHOST}:5432/{PGDB}'
 
-    # engine is great, extra abstraction layer - allows to interchange between sqlite3 and psql
-
-# pprint(dict(os.environ.items()))
 
 assert DBURL
 Engine = sqlalchemy.create_engine(DBURL, echo=True)
 Session = sessionmaker(Engine)
-# session collects transactions and commits them at once
-# also session can do queries (unlike connection)
