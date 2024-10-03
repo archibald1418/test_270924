@@ -1,0 +1,48 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web_test
+    environment:
+      - PGUSER=${PGUSER}
+      - PGDB=${PGDB}
+      - PGPASS=${PGPASS}
+      - PGHOST=${PGHOST}
+      - DBAPI=${DBAPI}
+      - DB=${DB}
+    ports:
+      - "8000:8000"
+    networks:
+      - testnet
+        #volumes:
+        #- ./scripts:/app/scripts 
+    depends_on:
+      - postgres
+    restart: unless-stopped
+      #command: tail -f /dev/null
+
+  postgres:
+    build:
+      context: db
+      dockerfile: Dockerfile
+    container_name: postgresql
+    environment:
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_DB=${PGDB}
+      - POSTGRES_PASSWORD=${PGPASS}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - testnet
+
+networks:
+  testnet:
+    name: testnet
+    driver: bridge
+    attachable: false
+
+volumes:
+  pgdata:

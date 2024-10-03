@@ -4,8 +4,8 @@ from sqlalchemy.orm import sessionmaker
 import os
 from pprint import pprint
 
-if not load_dotenv(".env", override=True):
-    raise Exception("Envs are not loaded, check them please")
+#if not load_dotenv(".env", override=True):
+#    raise Exception("Envs are not loaded, check them please")
 
 DBAPI = os.environ["DBAPI"]
 DB = os.environ["DB"]
@@ -14,14 +14,14 @@ DBURL = None
 if DBAPI == 'sqlite':
     DB += '.db'
     DBURL = f"{DBAPI}:///{DB}"
-    print(DBAPI)
 elif 'pg' in DBAPI:
     PGUSER = os.environ['PGUSER']
-    PGPASSWORD = os.environ["PGPASSWORD"]
+    PGPASS = os.environ["PGPASS"]
     PGHOST = os.environ["PGHOST"]
-    PGPORT = os.environ["PGPORT"]
+    PGDB = os.environ["PGDB"]
+    PGPORT = 5432
 
-    DBURL = f'postgresql+{DBAPI}://{PGUSER}@{PGHOST}:{PGPORT}/{DB}'
+    DBURL=f'postgresql+{DBAPI}://{PGUSER}:{PGPASS}@{PGHOST}:5432/{PGDB}'
 
     # engine is great, extra abstraction layer - allows to interchange between sqlite3 and psql
 
