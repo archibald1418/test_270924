@@ -2,7 +2,7 @@
 
 ### Setup instructions
 
-- Create your .env file setting the variables:
+- In the project's root folder create your `.env` file setting the following variables:
     - PGUSER - admin user for your Postgres Database
     - PGDB - Postgres database name
     - PGPASS - Postgres database password
