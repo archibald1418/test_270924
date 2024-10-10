@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import VARCHAR
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.schema import Column
 
-from _types import OrderStatus
+from ._types import OrderStatus
 
 UUID_LENGTH = 5
 

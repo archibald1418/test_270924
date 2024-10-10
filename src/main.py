@@ -14,9 +14,9 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import defer
 
-from config import Session
-from dto import CreateOrderDto, OrderDto, ProductDto, UpdateOrderStatus
-from models import Order, OrderItem, Product
+from .config import Session
+from .dto import CreateOrderDto, OrderDto, ProductDto, UpdateOrderStatus
+from .models import Order, OrderItem, Product
 
 
 @asynccontextmanager
@@ -39,7 +39,7 @@ def create_app():
         })
 
 
-    # Produtc endpoints
+    # Product endpoints
 
     @app.post("/products", status_code=HTTPStatus.CREATED)
     def create_product(product: ProductDto, res: Response):
@@ -61,7 +61,6 @@ def create_app():
 
 
     @app.get("/products/{id}")
-    # pydantic will check if the mapping went well
     def get_product(id: str) -> ProductDto | None:
         with Session() as session:
             stmt = select(Product).where(Product.id == id)
@@ -94,7 +93,6 @@ def create_app():
 
 
     # Orders
-
     @app.post("/orders", status_code=HTTPStatus.CREATED)
     def create_order(newOrder: CreateOrderDto) -> None:
         # 201 or 409
