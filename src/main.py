@@ -6,17 +6,19 @@ from pprint import pprint
 from typing import Annotated, Any, Dict, cast
 
 import fastapi.logger as logger
-from fastapi import FastAPI, HTTPException, Path, Query, Request, Response
+from fastapi import FastAPI, HTTPException, Path, Query, Request, Response, Depends
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from sqlalchemy import delete, select, text, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import defer
+from sqlalchemy.orm import sessionmaker
 
-from .config import Session
+from .config import get_engine
 from .dto import CreateOrderDto, OrderDto, ProductDto, UpdateOrderStatus
 from .models import Order, OrderItem, Product
+
 
 
 @asynccontextmanager
@@ -27,6 +29,9 @@ async def lifespan(app: FastAPI):
 
 
 def create_app():
+    
+    # Session = sessionmaker(get_engine())
+    Session = sessionmaker(Depends(get_engine))
 
     app = FastAPI(debug=True, title="This is a title",
                 summary="This is a summary", lifespan=lifespan)

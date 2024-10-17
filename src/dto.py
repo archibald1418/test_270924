@@ -4,8 +4,8 @@ from typing import Annotated, Optional
 from pydantic import (BaseModel, Field, ValidationError, field_validator,
                       model_validator)
 
-from _types import OrderStatus
-from models import UUID_LENGTH
+from ._types import OrderStatus
+from .models import UUID_LENGTH
 
 
 class ProductDto(BaseModel):
